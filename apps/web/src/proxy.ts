@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 const protectedPrefixes = ["/dashboard", "/bookings", "/subscriptions", "/properties", "/tanks", "/pm", "/admin"];
+const publicProtectedExceptions = ["/bookings/new"];
 
 export async function proxy(request: NextRequest) {
   const response = NextResponse.next();
@@ -26,10 +27,14 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isProtected = protectedPrefixes.some((prefix) => request.nextUrl.pathname.startsWith(prefix));
+  const isProtected =
+    protectedPrefixes.some((prefix) => request.nextUrl.pathname.startsWith(prefix)) &&
+    !publicProtectedExceptions.includes(request.nextUrl.pathname);
 
   if (isProtected && !user) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("returnTo", `${request.nextUrl.pathname}${request.nextUrl.search}`);
+    return NextResponse.redirect(loginUrl);
   }
 
   return response;

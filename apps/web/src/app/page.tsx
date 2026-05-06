@@ -108,7 +108,7 @@ function PropertyOwnerInfoSection() {
 export default function Home() {
   return (
     <main className="relative flex flex-1 flex-col overflow-hidden bg-[#071b22] text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#1f6f86_0,#0b2530_42%,#071b22_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#3b82f6_0,#1d4ed8_42%,#0b2a8a_100%)]" />
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-center bg-cover opacity-20"
