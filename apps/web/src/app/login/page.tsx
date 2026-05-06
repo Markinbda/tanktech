@@ -27,6 +27,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeAction, setActiveAction] = useState<"signin" | "register" | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -64,6 +65,15 @@ export default function LoginPage() {
     return true;
   }
 
+  async function withTimeout<T>(operation: Promise<T>, timeoutMs = 15000): Promise<T> {
+    return await Promise.race([
+      operation,
+      new Promise<T>((_, reject) => {
+        setTimeout(() => reject(new Error("Request timed out. Please try again.")), timeoutMs);
+      }),
+    ]);
+  }
+
   async function onSignIn() {
     setError(null);
     setNotice(null);
@@ -73,16 +83,26 @@ export default function LoginPage() {
     }
 
     setIsSubmitting(true);
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    setActiveAction("signin");
 
-    if (signInError) {
-      setError(signInError.message);
+    try {
+      const { error: signInError } = await withTimeout(
+        supabase.auth.signInWithPassword({ email: email.trim(), password }),
+      );
+
+      if (signInError) {
+        setError(signInError.message);
+        return;
+      }
+
+      router.replace(returnTo);
+      router.refresh();
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : "Unable to sign in.");
+    } finally {
       setIsSubmitting(false);
-      return;
+      setActiveAction(null);
     }
-
-    router.replace(returnTo);
-    router.refresh();
   }
 
   async function onRegister() {
@@ -94,25 +114,34 @@ export default function LoginPage() {
     }
 
     setIsSubmitting(true);
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-    });
+    setActiveAction("register");
 
-    if (signUpError) {
-      setError(signUpError.message);
+    try {
+      const { data, error: signUpError } = await withTimeout(
+        supabase.auth.signUp({
+          email: email.trim(),
+          password,
+        }),
+      );
+
+      if (signUpError) {
+        setError(signUpError.message);
+        return;
+      }
+
+      if (data.session) {
+        router.replace("/register");
+        router.refresh();
+        return;
+      }
+
+      setNotice("Account created. Please confirm your email, then sign in with your password.");
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : "Unable to create account.");
+    } finally {
       setIsSubmitting(false);
-      return;
+      setActiveAction(null);
     }
-
-    if (data.session) {
-      router.replace("/register");
-      router.refresh();
-      return;
-    }
-
-    setNotice("Account created. Please confirm your email, then sign in with your password.");
-    setIsSubmitting(false);
   }
 
   function getErrorMessage(message: string) {
@@ -133,7 +162,13 @@ export default function LoginPage() {
         <p className="mt-1 text-sm text-slate-500">
           New customers can create an account below and complete onboarding immediately after sign-in.
         </p>
-        <form className="mt-6 space-y-4" onSubmit={(event) => event.preventDefault()}>
+        <form
+          className="mt-6 space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void onSignIn();
+          }}
+        >
           <label className="block text-sm font-semibold text-sky-900">
             Email
             <input
@@ -163,7 +198,7 @@ export default function LoginPage() {
             onClick={() => void onSignIn()}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Working..." : "Sign in"}
+            {activeAction === "signin" ? "Signing in..." : "Sign in"}
           </button>
           <button
             className="w-full rounded-xl border border-sky-300 bg-white px-4 py-2.5 font-semibold text-sky-900 transition hover:bg-sky-50"
@@ -171,7 +206,7 @@ export default function LoginPage() {
             onClick={() => void onRegister()}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Working..." : "Create account"}
+            {activeAction === "register" ? "Creating account..." : "Create account"}
           </button>
         </form>
         {notice ? (
