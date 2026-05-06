@@ -6,3 +6,4 @@ publish = ".next"
 [build.environment]
 NODE_VERSION = "20"
 NEXT_PUBLIC_APP_URL = "https://tanktech.netlify.app"
+NEXT_PUBLIC_SITE_URL = "https://tanktech.netlify.app"
