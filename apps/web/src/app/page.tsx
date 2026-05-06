@@ -112,7 +112,7 @@ export default function Home() {
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-center bg-cover opacity-20"
-        style={{ backgroundImage: "url('/fresh-water.svg')" }}
+        style={{ backgroundImage: "url('/Water.avif')" }}
       />
       <div className="absolute inset-x-0 top-0 h-48 bg-[linear-gradient(180deg,rgba(7,27,34,0.9),rgba(7,27,34,0))]" />
 
