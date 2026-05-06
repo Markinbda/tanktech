@@ -25,6 +25,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [authIntent, setAuthIntent] = useState<"signin" | "register">("signin");
 
   useEffect(() => {
     let mounted = true;
@@ -55,7 +56,9 @@ export default function LoginPage() {
     const { error: signInError } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?returnTo=${encodeURIComponent(returnTo)}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?returnTo=${encodeURIComponent(
+          authIntent === "register" ? "/register" : returnTo,
+        )}`,
       },
     });
 
@@ -76,7 +79,7 @@ export default function LoginPage() {
           Use your email to receive a secure magic link. After sign-in, you will be returned to your previous page.
         </p>
         <p className="mt-1 text-sm text-slate-500">
-          New customers will be guided through a quick registration step after authentication.
+          New customers can use the Register option below to start onboarding immediately after authentication.
         </p>
         <form className="mt-6 space-y-4" onSubmit={onSubmit}>
           <label className="block text-sm font-semibold text-sky-900">
@@ -92,8 +95,16 @@ export default function LoginPage() {
           <button
             className="w-full rounded-xl bg-sky-900 px-4 py-2.5 font-semibold text-white transition hover:bg-sky-800"
             type="submit"
+            onClick={() => setAuthIntent("signin")}
           >
             Send magic link
+          </button>
+          <button
+            className="w-full rounded-xl border border-sky-300 bg-white px-4 py-2.5 font-semibold text-sky-900 transition hover:bg-sky-50"
+            type="submit"
+            onClick={() => setAuthIntent("register")}
+          >
+            Register as new customer
           </button>
         </form>
         {sent ? (

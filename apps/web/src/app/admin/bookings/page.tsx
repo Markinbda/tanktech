@@ -2,7 +2,7 @@ import { BookingScheduler } from "@/components/admin/booking-scheduler";
 import { requireRole } from "@/lib/auth";
 
 export default async function AdminBookingsPage() {
-  const { supabase } = await requireRole(["staff", "admin"]);
+  const { supabase } = await requireRole(["admin"]);
 
   const [{ data: bookings }, { data: technicians }] = await Promise.all([
     supabase

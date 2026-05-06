@@ -42,7 +42,7 @@ export async function GET(request: Request) {
   const admin = createAdminClient();
   const { data: profile } = await admin
     .from("profiles")
-    .select("id, full_name, phone")
+    .select("id, full_name, phone, address, parish, registration_details")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -60,7 +60,10 @@ export async function GET(request: Request) {
     );
   }
 
-  if (!profile.full_name || !profile.phone) {
+  const registrationDetails = (profile.registration_details as Record<string, unknown> | null) ?? {};
+  const registrationComplete = Boolean(registrationDetails.completed);
+
+  if (!profile.full_name || !profile.phone || !profile.address || !profile.parish || !registrationComplete) {
     return NextResponse.redirect(
       new URL(`/register?returnTo=${encodeURIComponent(returnTo)}`, request.url),
     );

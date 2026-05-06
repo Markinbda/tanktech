@@ -1,8 +1,10 @@
+import Link from "next/link";
+
 import { DashboardCard } from "@/components/dashboard-card";
 import { requireRole } from "@/lib/auth";
 
 export default async function AdminDashboardPage() {
-  const { supabase } = await requireRole(["staff", "admin"]);
+  const { supabase } = await requireRole(["admin"]);
 
   const [requested, scheduled, inProgress, completed] = await Promise.all([
     supabase.from("bookings").select("id", { head: true, count: "exact" }).eq("status", "requested"),
@@ -19,6 +21,20 @@ export default async function AdminDashboardPage() {
         <DashboardCard label="Scheduled" value={scheduled.count ?? 0} />
         <DashboardCard label="In Progress" value={inProgress.count ?? 0} />
         <DashboardCard label="Completed" value={completed.count ?? 0} />
+      </section>
+      <section className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Link href="/admin/users" className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-sky-900 hover:bg-sky-50">
+          User Directory
+        </Link>
+        <Link href="/admin/upcoming-cleanings" className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-sky-900 hover:bg-sky-50">
+          Upcoming Cleanings
+        </Link>
+        <Link href="/admin/reminders" className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-sky-900 hover:bg-sky-50">
+          Reminder Management
+        </Link>
+        <Link href="/admin/bookings" className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-sky-900 hover:bg-sky-50">
+          Booking Scheduler
+        </Link>
       </section>
     </main>
   );

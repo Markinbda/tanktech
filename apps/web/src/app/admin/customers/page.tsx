@@ -1,7 +1,7 @@
 import { requireRole } from "@/lib/auth";
 
 export default async function AdminCustomersPage() {
-  const { supabase } = await requireRole(["staff", "admin"]);
+  const { supabase } = await requireRole(["admin"]);
 
   const { data: customers } = await supabase
     .from("profiles")
