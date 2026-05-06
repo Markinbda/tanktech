@@ -1,0 +1,30 @@
+
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+dist/
+coverage/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Supabase local artifacts
+supabase/.temp/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+
+# Keep Codacy instructions local
+.github/instructions/codacy.instructions.md

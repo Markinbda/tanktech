@@ -1,0 +1,14 @@
+project_id = "tanktech"
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[functions.send-email]
+verify_jwt = true
+
+[functions.reminders-run]
+verify_jwt = true
+
+[functions.generate-certificate]
+verify_jwt = true
