@@ -1,0 +1,22 @@
+<svg width="1600" height="1200" viewBox="0 0 1600 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="1200" fill="#0D5A6B"/>
+  <g opacity="0.75">
+    <path d="M-90 220C84 164 183 170 320 221C463 274 571 293 748 251C900 215 1017 160 1183 172C1344 184 1471 270 1697 245" stroke="#D8FBFF" stroke-width="22" stroke-linecap="round"/>
+    <path d="M-76 397C134 357 280 385 416 427C566 473 690 488 849 456C1008 424 1126 343 1296 350C1431 355 1545 419 1680 447" stroke="#AEE9F2" stroke-width="18" stroke-linecap="round"/>
+    <path d="M-44 610C143 561 269 571 423 616C572 660 690 692 834 668C1009 638 1102 558 1292 570C1454 580 1567 666 1710 706" stroke="#D8FBFF" stroke-width="20" stroke-linecap="round"/>
+    <path d="M-20 832C165 781 268 796 425 838C569 877 695 914 851 892C1014 870 1112 807 1276 810C1445 815 1548 901 1701 939" stroke="#9CD9E3" stroke-width="16" stroke-linecap="round"/>
+    <path d="M-40 1033C118 994 246 989 392 1021C553 1056 686 1095 866 1061C1041 1027 1144 968 1320 980C1481 991 1567 1039 1718 1080" stroke="#D8FBFF" stroke-width="18" stroke-linecap="round"/>
+  </g>
+  <g opacity="0.35" filter="url(#blur)">
+    <circle cx="338" cy="289" r="148" fill="#8BE7F3"/>
+    <circle cx="1272" cy="698" r="205" fill="#7BCBD7"/>
+    <circle cx="774" cy="918" r="194" fill="#9CD9E3"/>
+  </g>
+  <defs>
+    <filter id="blur" x="30" y="0" width="1450" height="1200" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feGaussianBlur stdDeviation="80" result="effect1_foregroundBlur_1_2"/>
+    </filter>
+  </defs>
+</svg>
