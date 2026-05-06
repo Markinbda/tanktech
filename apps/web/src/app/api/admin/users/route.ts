@@ -120,7 +120,7 @@ export async function GET(request: Request) {
     .select(
       "id, full_name, email, phone, address, parish, preferred_contact_method, registration_details, role, created_at",
     )
-    .in("role", ["customer", "property_manager"])
+    .in("role", ["customer", "property_manager", "staff"])
     .limit(500);
 
   if (usersError) {

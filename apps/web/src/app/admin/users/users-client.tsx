@@ -105,6 +105,7 @@ export function AdminUsersClient() {
           <thead className="bg-slate-50 text-xs uppercase text-slate-600">
             <tr>
               <th className="px-4 py-3">User</th>
+              <th className="px-4 py-3">Role</th>
               <th className="px-4 py-3">Address</th>
               <th className="px-4 py-3">Contact</th>
               <th className="px-4 py-3">Tanks</th>
@@ -119,6 +120,7 @@ export function AdminUsersClient() {
                   <p className="font-semibold text-sky-950">{row.fullName ?? "Unnamed user"}</p>
                   <p className="text-xs text-slate-600">{row.email ?? "No email"}</p>
                 </td>
+                <td className="px-4 py-3 capitalize">{row.role.replaceAll("_", " ")}</td>
                 <td className="px-4 py-3">
                   <p>{row.address ?? "-"}</p>
                   <p className="text-xs text-slate-600">{row.parish ?? ""}</p>
