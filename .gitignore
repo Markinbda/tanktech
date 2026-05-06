@@ -28,3 +28,6 @@ Thumbs.db
 
 # Keep Codacy instructions local
 .github/instructions/codacy.instructions.md
+
+# Local Netlify folder
+.netlify
