@@ -53,10 +53,11 @@ export default function LoginPage() {
     event.preventDefault();
     setError(null);
 
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
     const { error: signInError } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?returnTo=${encodeURIComponent(
+        emailRedirectTo: `${siteUrl}/auth/callback?returnTo=${encodeURIComponent(
           authIntent === "register" ? "/register" : returnTo,
         )}`,
       },
