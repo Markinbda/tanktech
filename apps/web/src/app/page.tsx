@@ -15,12 +15,6 @@ const customerFeatures = [
   },
 ];
 
-const ownerBenefits = [
-  "Centralized property and tank records for every address in your portfolio.",
-  "Team access for property managers, staff, and service coordination.",
-  "Planned subscriptions and reminders to prevent missed cleanings.",
-];
-
 type SectionIntroProps = {
   eyebrow: string;
   title: string;
@@ -59,18 +53,6 @@ function CustomerFeatureGrid() {
   );
 }
 
-function OwnerBenefitList() {
-  return (
-    <ul className="mt-8 space-y-4 text-sm leading-6 text-[#21404a]">
-      {ownerBenefits.map((benefit) => (
-        <li key={benefit} className="rounded-2xl border border-[#d9c3a1] bg-white/65 px-4 py-3">
-          {benefit}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 function CustomerInfoSection() {
   return (
     <section
@@ -84,23 +66,6 @@ function CustomerInfoSection() {
         tone="light"
       />
       <CustomerFeatureGrid />
-    </section>
-  );
-}
-
-function PropertyOwnerInfoSection() {
-  return (
-    <section
-      id="property-owner-info"
-      className="rounded-[2rem] border border-[#dcb572]/25 bg-[#f4ede2] p-8 text-[#08262f] shadow-[0_30px_80px_rgba(0,0,0,0.18)]"
-    >
-      <SectionIntro
-        eyebrow="Property Owner Information"
-        title="Portfolio-level oversight for rentals, condos, and managed properties."
-        body="Property owners can coordinate multiple sites, keep teams aligned, and maintain a reliable cleaning schedule across every tank under management."
-        tone="dark"
-      />
-      <OwnerBenefitList />
     </section>
   );
 }
@@ -144,9 +109,8 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="mt-16 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="mt-16">
           <CustomerInfoSection />
-          <PropertyOwnerInfoSection />
         </div>
       </section>
     </main>

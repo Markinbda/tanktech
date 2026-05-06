@@ -13,7 +13,6 @@ const appLinks = [
 
 const marketingLinks = [
   { href: "/#customer-info", label: "Customer Info" },
-  { href: "/#property-owner-info", label: "Property Owner Info" },
 ];
 
 export function AppNav() {
