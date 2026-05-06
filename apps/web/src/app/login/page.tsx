@@ -55,7 +55,7 @@ export default function LoginPage() {
     const { error: signInError } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}${returnTo}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?returnTo=${encodeURIComponent(returnTo)}`,
       },
     });
 
@@ -74,6 +74,9 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-sky-950">Sign in to Tank Tech</h1>
         <p className="mt-2 text-sm text-slate-600">
           Use your email to receive a secure magic link. After sign-in, you will be returned to your previous page.
+        </p>
+        <p className="mt-1 text-sm text-slate-500">
+          New customers will be guided through a quick registration step after authentication.
         </p>
         <form className="mt-6 space-y-4" onSubmit={onSubmit}>
           <label className="block text-sm font-semibold text-sky-900">
