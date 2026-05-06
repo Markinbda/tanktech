@@ -458,7 +458,16 @@ for select using (public.is_staff_or_admin());
 create policy "email_log_insert_service" on public.email_log
 for insert with check (public.is_staff_or_admin());
 
-alter table storage.objects enable row level security;
+do $$
+begin
+  begin
+    alter table storage.objects enable row level security;
+  exception
+    when insufficient_privilege then
+      null;
+  end;
+end;
+$$;
 
 create policy "photos_select_scope" on storage.objects
 for select using (
