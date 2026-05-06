@@ -5,13 +5,25 @@ import { requireAdminApi } from "@/lib/admin-api";
 type Params = { id: string };
 
 async function loadUser(admin: NonNullable<Awaited<ReturnType<typeof requireAdminApi>>["admin"]>, id: string) {
-  return admin
+  const fullSelect =
+    "id, full_name, email, phone, address, parish, preferred_contact_method, registration_details, role, created_at";
+  const baseSelect = "id, full_name, email, phone, registration_details, role, created_at";
+
+  const fullResult = await admin
     .from("profiles")
-    .select(
-      "id, full_name, email, phone, address, parish, preferred_contact_method, registration_details, role, created_at",
-    )
+    .select(fullSelect)
     .eq("id", id)
     .maybeSingle();
+
+  if (!fullResult.error) {
+    return fullResult;
+  }
+
+  if (!fullResult.error.message.toLowerCase().includes("column") || !fullResult.error.message.toLowerCase().includes("does not exist")) {
+    return fullResult;
+  }
+
+  return admin.from("profiles").select(baseSelect).eq("id", id).maybeSingle();
 }
 
 async function loadProperties(admin: NonNullable<Awaited<ReturnType<typeof requireAdminApi>>["admin"]>, id: string) {

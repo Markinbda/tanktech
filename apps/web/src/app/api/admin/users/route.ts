@@ -7,9 +7,9 @@ type UserRow = {
   full_name: string | null;
   email: string | null;
   phone: string | null;
-  address: string | null;
-  parish: string | null;
-  preferred_contact_method: string | null;
+  address?: string | null;
+  parish?: string | null;
+  preferred_contact_method?: string | null;
   registration_details: Record<string, unknown> | null;
   created_at: string;
 };
@@ -105,6 +105,24 @@ async function loadTanks(admin: NonNullable<Awaited<ReturnType<typeof requireAdm
   return (data ?? []) as TankRow[];
 }
 
+async function loadUsersWithFallback(admin: NonNullable<Awaited<ReturnType<typeof requireAdminApi>>["admin"]>) {
+  const fullSelect =
+    "id, full_name, email, phone, address, parish, preferred_contact_method, registration_details, role, created_at";
+  const baseSelect = "id, full_name, email, phone, registration_details, role, created_at";
+
+  const fullResult = await admin.from("profiles").select(fullSelect).in("role", ["customer", "property_manager", "staff"]).limit(500);
+
+  if (!fullResult.error) {
+    return fullResult;
+  }
+
+  if (!fullResult.error.message.toLowerCase().includes("column") || !fullResult.error.message.toLowerCase().includes("does not exist")) {
+    return fullResult;
+  }
+
+  return admin.from("profiles").select(baseSelect).in("role", ["customer", "property_manager", "staff"]).limit(500);
+}
+
 export async function GET(request: Request) {
   const guard = await requireAdminApi();
   if (guard.errorResponse || !guard.admin) {
@@ -115,13 +133,7 @@ export async function GET(request: Request) {
   const q = requestUrl.searchParams.get("q")?.trim().toLowerCase() ?? "";
   const sort = requestUrl.searchParams.get("sort") ?? "created_desc";
 
-  const { data: users, error: usersError } = await guard.admin
-    .from("profiles")
-    .select(
-      "id, full_name, email, phone, address, parish, preferred_contact_method, registration_details, role, created_at",
-    )
-    .in("role", ["customer", "property_manager", "staff"])
-    .limit(500);
+  const { data: users, error: usersError } = await loadUsersWithFallback(guard.admin);
 
   if (usersError) {
     return NextResponse.json({ error: usersError.message }, { status: 400 });
@@ -153,7 +165,7 @@ export async function GET(request: Request) {
       phone: user.phone,
       address: user.address ?? fallbackProperty?.address ?? null,
       parish: user.parish ?? fallbackProperty?.parish ?? null,
-      preferredContactMethod: user.preferred_contact_method,
+      preferredContactMethod: user.preferred_contact_method ?? null,
       role: user.role,
       registrationDetails: user.registration_details ?? {},
       numberOfTanks: userTanks.length,
