@@ -11,7 +11,7 @@ const appLinks = [
   { href: "/pm/dashboard", label: "Property Manager" },
   { href: "/admin/dashboard", label: "Staff/Admin" },
   { href: "/bookings/new", label: "Book Cleaning" },
-  { href: "/subscriptions", label: "Subscriptions" },
+  { href: "/admin/reminders", label: "Reminders" },
 ];
 
 const marketingLinks = [
