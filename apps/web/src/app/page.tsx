@@ -87,7 +87,7 @@ export default function Home() {
             The Future of Tank Cleaning
           </p>
           <h1 className="mt-6 max-w-3xl font-[var(--font-space-grotesk)] text-5xl leading-tight text-white sm:text-6xl lg:text-7xl">
-            Fresh water protection for every home and property portfolio.
+            Save Water With Our Robotic Tank Cleaning
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-white/78 sm:text-xl">
             Tank Tech gives homeowners and property owners a clear way to schedule cleanings,
