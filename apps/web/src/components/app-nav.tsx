@@ -62,7 +62,7 @@ export function AppNav() {
   }
 
   return (
-    <header className="sticky top-0 z-20 border-b border-white/10 bg-[#08262f]/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-20 border-b border-white/10 bg-[#0a1a3a]/90 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="text-xl font-semibold uppercase tracking-[0.22em] text-white">
           Tank Tech
