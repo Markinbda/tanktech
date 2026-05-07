@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/browser";
 const appLinks = [
   { href: "/dashboard", label: "Customer" },
   { href: "/pm/dashboard", label: "Property Manager" },
-  { href: "/admin/dashboard", label: "Staff/Admin" },
+  { href: "/admin/dashboard", label: "Dashboard" },
   { href: "/bookings/new", label: "Book Cleaning" },
   { href: "/admin/reminders", label: "Reminders" },
 ];
