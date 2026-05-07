@@ -24,6 +24,7 @@ export function AppNav() {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -38,6 +39,23 @@ export function AppNav() {
       }
 
       setIsAuthenticated(Boolean(user));
+
+      if (!user) {
+        setRole(null);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!mounted) {
+        return;
+      }
+
+      setRole((profile as { role?: string } | null)?.role ?? null);
     }
 
     void loadUser();
@@ -46,6 +64,7 @@ export function AppNav() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(Boolean(session?.user));
+      void loadUser();
     });
 
     return () => {
@@ -57,9 +76,18 @@ export function AppNav() {
   async function onSignOut() {
     await supabase.auth.signOut();
     setIsAuthenticated(false);
+    setRole(null);
     router.push("/login");
     router.refresh();
   }
+
+  const navLinks = useMemo(() => {
+    if (role !== "admin") {
+      return appLinks;
+    }
+
+    return appLinks.map((link) => (link.label === "Customer" ? { ...link, href: "/admin/customers" } : link));
+  }, [role]);
 
   return (
     <header className="sticky top-0 z-20 border-b border-white/10 bg-[#0a1a3a]/90 backdrop-blur-xl">
@@ -68,7 +96,7 @@ export function AppNav() {
           Tank Tech
         </Link>
         <nav className="flex flex-wrap items-center gap-3 text-sm font-semibold text-white/88">
-          {(isHome ? marketingLinks : appLinks).map((link) => (
+          {(isHome ? marketingLinks : navLinks).map((link) => (
             <Link
               key={link.href}
               href={link.href}

@@ -57,6 +57,15 @@ export function AdminUserDetailClient({ userId }: { userId: string }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editNextDue, setEditNextDue] = useState("");
   const [editNotes, setEditNotes] = useState("");
+  const [profileName, setProfileName] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
+  const [profileAddress, setProfileAddress] = useState("");
+  const [profileParish, setProfileParish] = useState("");
+  const [profileContactMethod, setProfileContactMethod] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileMessage, setProfileMessage] = useState<string | null>(null);
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
 
   async function loadAll() {
     setIsLoading(true);
@@ -88,6 +97,18 @@ export function AdminUserDetailClient({ userId }: { userId: string }) {
   useEffect(() => {
     void loadAll();
   }, [userId]);
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    setProfileName(user.full_name ?? "");
+    setProfilePhone(user.phone ?? "");
+    setProfileAddress(user.address ?? "");
+    setProfileParish(user.parish ?? "");
+    setProfileContactMethod(user.preferred_contact_method ?? "");
+  }, [user]);
 
   const tanksById = useMemo(() => new Map(tanks.map((tank) => [tank.id, tank])), [tanks]);
   const propertyById = useMemo(() => new Map(properties.map((property) => [property.id, property])), [properties]);
@@ -147,6 +168,58 @@ export function AdminUserDetailClient({ userId }: { userId: string }) {
     await loadAll();
   }
 
+  async function saveProfile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSavingProfile(true);
+    setError(null);
+    setProfileMessage(null);
+
+    const response = await fetch(`/api/admin/users/${userId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fullName: profileName,
+        phone: profilePhone || null,
+        address: profileAddress || null,
+        parish: profileParish || null,
+        preferredContactMethod: profileContactMethod || null,
+      }),
+    });
+
+    const body = (await response.json().catch(() => ({}))) as { error?: string };
+    if (!response.ok) {
+      setError(body.error ?? "Unable to update customer details.");
+      setSavingProfile(false);
+      return;
+    }
+
+    setSavingProfile(false);
+    setProfileMessage("Customer details updated.");
+    await loadAll();
+  }
+
+  async function resetPassword() {
+    setResettingPassword(true);
+    setError(null);
+    setProfileMessage(null);
+    setTemporaryPassword(null);
+
+    const response = await fetch(`/api/admin/users/${userId}/reset-password`, {
+      method: "POST",
+    });
+
+    const body = (await response.json().catch(() => ({}))) as { error?: string; temporaryPassword?: string };
+    if (!response.ok || !body.temporaryPassword) {
+      setError(body.error ?? "Unable to reset password.");
+      setResettingPassword(false);
+      return;
+    }
+
+    setTemporaryPassword(body.temporaryPassword);
+    setProfileMessage("Password reset complete. Share the temporary password securely.");
+    setResettingPassword(false);
+  }
+
   return (
     <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -167,22 +240,84 @@ export function AdminUserDetailClient({ userId }: { userId: string }) {
 
       {user ? (
         <section className="mt-6 grid gap-4 rounded-2xl border border-slate-200 bg-white p-6 md:grid-cols-2">
+          <form className="grid gap-3" onSubmit={saveProfile}>
+            <h2 className="text-lg font-semibold text-sky-950">Customer Profile</h2>
+            <label className="text-sm font-semibold text-sky-900">
+              Full name
+              <input
+                type="text"
+                value={profileName}
+                onChange={(event) => setProfileName(event.target.value)}
+                className="mt-1 w-full rounded-xl border border-sky-200 px-3 py-2"
+                required
+              />
+            </label>
+            <label className="text-sm font-semibold text-sky-900">
+              Contact number
+              <input
+                type="text"
+                value={profilePhone}
+                onChange={(event) => setProfilePhone(event.target.value)}
+                className="mt-1 w-full rounded-xl border border-sky-200 px-3 py-2"
+              />
+            </label>
+            <label className="text-sm font-semibold text-sky-900">
+              Address
+              <input
+                type="text"
+                value={profileAddress}
+                onChange={(event) => setProfileAddress(event.target.value)}
+                className="mt-1 w-full rounded-xl border border-sky-200 px-3 py-2"
+              />
+            </label>
+            <label className="text-sm font-semibold text-sky-900">
+              Parish
+              <input
+                type="text"
+                value={profileParish}
+                onChange={(event) => setProfileParish(event.target.value)}
+                className="mt-1 w-full rounded-xl border border-sky-200 px-3 py-2"
+              />
+            </label>
+            <label className="text-sm font-semibold text-sky-900">
+              Preferred contact method
+              <input
+                type="text"
+                value={profileContactMethod}
+                onChange={(event) => setProfileContactMethod(event.target.value)}
+                placeholder="phone, email, or sms"
+                className="mt-1 w-full rounded-xl border border-sky-200 px-3 py-2"
+              />
+            </label>
+            <p className="text-sm text-slate-600">Email: {user.email ?? "No email"}</p>
+            <button
+              type="submit"
+              disabled={savingProfile}
+              className="rounded-xl bg-sky-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-800 disabled:opacity-60"
+            >
+              {savingProfile ? "Saving..." : "Save customer details"}
+            </button>
+          </form>
+
           <div>
-            <h2 className="text-lg font-semibold text-sky-950">Customer</h2>
-            <p className="mt-2 text-sm text-slate-700">{user.full_name ?? "Unnamed user"}</p>
-            <p className="text-sm text-slate-600">{user.email ?? "No email"}</p>
-            <p className="text-sm text-slate-600">{user.phone ?? "No phone"}</p>
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-sky-950">Registration</h2>
-            <p className="mt-2 text-sm text-slate-700">Address: {user.address ?? "-"}</p>
-            <p className="text-sm text-slate-700">Parish: {user.parish ?? "-"}</p>
-            <p className="text-sm text-slate-700 capitalize">
-              Preferred contact: {(user.preferred_contact_method ?? "not set").replaceAll("_", " ")}
-            </p>
+            <h2 className="text-lg font-semibold text-sky-950">Password Reset</h2>
+            <p className="mt-2 text-sm text-slate-700">Generate a temporary password for this customer. Share it securely.</p>
+            <button
+              type="button"
+              onClick={() => void resetPassword()}
+              disabled={resettingPassword}
+              className="mt-3 rounded-xl border border-sky-300 px-4 py-2.5 text-sm font-semibold text-sky-900 hover:bg-sky-50 disabled:opacity-60"
+            >
+              {resettingPassword ? "Resetting..." : "Reset customer password"}
+            </button>
+            {temporaryPassword ? (
+              <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">Temporary password: {temporaryPassword}</p>
+            ) : null}
           </div>
         </section>
       ) : null}
+
+      {profileMessage ? <p className="mt-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{profileMessage}</p> : null}
 
       <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6">
         <h2 className="text-xl font-semibold text-sky-950">Tanks</h2>

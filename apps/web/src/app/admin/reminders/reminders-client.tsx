@@ -89,7 +89,8 @@ export function AdminRemindersClient() {
 
     const response = await fetch(`/api/admin/reminders?${params.toString()}`, { cache: "no-store" });
     if (!response.ok) {
-      setError("Unable to load reminders.");
+      const body = (await response.json().catch(() => ({}))) as { error?: string };
+      setError(body.error ?? "Unable to load reminders.");
       setRows([]);
       setUpcoming([]);
       setLoading(false);

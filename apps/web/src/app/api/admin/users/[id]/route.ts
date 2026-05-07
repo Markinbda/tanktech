@@ -1,8 +1,22 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import { requireAdminApi } from "@/lib/admin-api";
 
 type Params = { id: string };
+
+const updateUserSchema = z.object({
+  fullName: z.string().trim().min(1, "Full name is required."),
+  phone: z.string().trim().optional().nullable(),
+  address: z.string().trim().optional().nullable(),
+  parish: z.string().trim().optional().nullable(),
+  preferredContactMethod: z.string().trim().optional().nullable(),
+});
+
+function toNullable(value: string | null | undefined) {
+  const next = value?.trim() ?? "";
+  return next.length ? next : null;
+}
 
 async function loadUser(admin: NonNullable<Awaited<ReturnType<typeof requireAdminApi>>["admin"]>, id: string) {
   const fullSelect =
@@ -129,4 +143,43 @@ export async function GET(_request: Request, { params }: { params: Promise<Param
     tanks: tanks ?? [],
     cleaningHistory: cleaningHistory ?? [],
   });
+}
+
+export async function PATCH(request: Request, { params }: { params: Promise<Params> }) {
+  const guard = await requireAdminApi();
+  const auth = resolveGuardResponse(guard);
+  if (auth.response || !auth.admin) {
+    return auth.response!;
+  }
+
+  const { id } = await params;
+  const payload = updateUserSchema.safeParse(await request.json());
+  if (!payload.success) {
+    return NextResponse.json({ error: payload.error.flatten() }, { status: 400 });
+  }
+
+  const updatePayload = {
+    full_name: payload.data.fullName.trim(),
+    phone: toNullable(payload.data.phone),
+    address: toNullable(payload.data.address),
+    parish: toNullable(payload.data.parish),
+    preferred_contact_method: toNullable(payload.data.preferredContactMethod),
+  };
+
+  const { data: updatedUser, error } = await auth.admin
+    .from("profiles")
+    .update(updatePayload)
+    .eq("id", id)
+    .select("id, full_name, email, phone, address, parish, preferred_contact_method, role")
+    .maybeSingle();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  if (!updatedUser) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  return NextResponse.json({ user: updatedUser });
 }

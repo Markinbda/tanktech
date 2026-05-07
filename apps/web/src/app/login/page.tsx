@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/browser";
 
 function getSafeReturnTo(value: string | null) {
   if (!value) {
-    return "/dashboard";
+    return null;
   }
 
   if (!value.startsWith("/") || value.startsWith("//")) {
@@ -29,6 +29,20 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeAction, setActiveAction] = useState<"signin" | "register" | null>(null);
 
+  async function resolvePostLoginRoute(userId: string) {
+    if (returnTo) {
+      return returnTo;
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .maybeSingle();
+
+    return (profile as { role?: string } | null)?.role === "admin" ? "/admin/dashboard" : "/dashboard";
+  }
+
   useEffect(() => {
     let mounted = true;
 
@@ -41,7 +55,8 @@ export default function LoginPage() {
         return;
       }
 
-      router.replace(returnTo);
+      const destination = await resolvePostLoginRoute(user.id);
+      router.replace(destination);
     }
 
     void checkSession();
@@ -95,7 +110,12 @@ export default function LoginPage() {
         return;
       }
 
-      router.replace(returnTo);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const destination = user ? await resolvePostLoginRoute(user.id) : "/dashboard";
+      router.replace(destination);
       router.refresh();
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Unable to sign in.");

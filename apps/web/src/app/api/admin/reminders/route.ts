@@ -37,6 +37,14 @@ type PropertyRow = {
   notes: string | null;
 };
 
+type BookingRow = {
+  id: string;
+  owner_id: string | null;
+  tank_id: string | null;
+  property_id: string | null;
+  scheduled_start: string | null;
+};
+
 function startOfToday() {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -50,6 +58,10 @@ function addDays(date: Date, days: number) {
   const clone = new Date(date);
   clone.setDate(clone.getDate() + days);
   return clone;
+}
+
+function isId(value: string | null | undefined): value is string {
+  return Boolean(value && value.trim());
 }
 
 function parseMonth(month?: string) {
@@ -103,8 +115,12 @@ function matchesCustomerAndPropertyFilter(
 }
 
 function toUpcomingBookingRow(
-  booking: { id: string; owner_id: string; tank_id: string; property_id: string; scheduled_start: string | null },
+  booking: BookingRow,
 ) {
+  if (!isId(booking.owner_id) || !isId(booking.tank_id) || !isId(booking.property_id)) {
+    return null;
+  }
+
   const appointment = booking.scheduled_start ? new Date(booking.scheduled_start) : null;
   if (!appointment || Number.isNaN(appointment.getTime())) {
     return null;
@@ -124,9 +140,13 @@ function toUpcomingBookingRow(
 }
 
 function toDispatchCandidate(
-  booking: { id: string; owner_id: string; tank_id: string; property_id: string; scheduled_start: string | null },
+  booking: BookingRow,
   today: Date,
 ) {
+  if (!isId(booking.owner_id) || !isId(booking.tank_id) || !isId(booking.property_id)) {
+    return null;
+  }
+
   const appointment = booking.scheduled_start ? new Date(booking.scheduled_start) : null;
   if (!appointment || Number.isNaN(appointment.getTime())) {
     return null;
@@ -202,11 +222,15 @@ async function loadReminderHistory(
 
   const { data: rows, error } = await query;
   if (error) {
+    const message = error.message.toLowerCase();
+    if (message.includes("scheduled_reminders") && (message.includes("does not exist") || message.includes("could not find"))) {
+      return [];
+    }
     throw new Error(error.message);
   }
 
-  const userIds = Array.from(new Set((rows ?? []).map((row) => row.user_id)));
-  const tankIds = Array.from(new Set((rows ?? []).map((row) => row.tank_id)));
+  const userIds = Array.from(new Set((rows ?? []).map((row) => row.user_id).filter(isId)));
+  const tankIds = Array.from(new Set((rows ?? []).map((row) => row.tank_id).filter(isId)));
 
   const { data: tanks, error: tanksError } = tankIds.length
     ? await admin!.from("tanks").select("id, size_estimate, property_id").in("id", tankIds)
@@ -216,7 +240,7 @@ async function loadReminderHistory(
     throw new Error(tanksError.message);
   }
 
-  const propertyIds = Array.from(new Set((tanks ?? []).map((tank) => tank.property_id)));
+  const propertyIds = Array.from(new Set((tanks ?? []).map((tank) => tank.property_id).filter(isId)));
   const assets = await loadProfilesAndAssets(admin, userIds, tankIds, propertyIds);
 
   const normalizedFilters = normalizeFilterInputs(filters);
