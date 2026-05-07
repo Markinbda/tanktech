@@ -49,9 +49,48 @@ async function loadCustomers(supabase: Awaited<ReturnType<typeof requireRole>>["
   })) as CustomerRow[];
 }
 
+function mergeWithLatestProperty(customers: CustomerRow[], properties: Array<{ owner_id: string | null; address: string; parish: string | null; created_at: string }>) {
+  const latestPropertyByOwner = new Map<string, { address: string; parish: string | null; createdAt: number }>();
+
+  for (const property of properties) {
+    if (!property.owner_id) {
+      continue;
+    }
+
+    const createdAt = new Date(property.created_at).getTime();
+    const existing = latestPropertyByOwner.get(property.owner_id);
+    if (!existing || createdAt > existing.createdAt) {
+      latestPropertyByOwner.set(property.owner_id, {
+        address: property.address,
+        parish: property.parish,
+        createdAt,
+      });
+    }
+  }
+
+  return customers.map((customer) => {
+    const property = latestPropertyByOwner.get(customer.id);
+    return {
+      ...customer,
+      address: customer.address ?? property?.address ?? null,
+      parish: customer.parish ?? property?.parish ?? null,
+    };
+  });
+}
+
 export default async function AdminCustomersPage() {
   const { supabase } = await requireRole(["admin"]);
   const customers = await loadCustomers(supabase);
 
-  return <AdminCustomersClient customers={customers} />;
+  const customerIds = customers.map((customer) => customer.id);
+  const { data: properties } = customerIds.length
+    ? await supabase
+      .from("properties")
+      .select("owner_id, address, parish, created_at")
+      .in("owner_id", customerIds)
+    : { data: [] as Array<{ owner_id: string | null; address: string; parish: string | null; created_at: string }> };
+
+  const enrichedCustomers = mergeWithLatestProperty(customers, properties ?? []);
+
+  return <AdminCustomersClient customers={enrichedCustomers} />;
 }
