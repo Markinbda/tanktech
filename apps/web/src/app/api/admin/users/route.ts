@@ -10,7 +10,7 @@ type UserRow = {
   address?: string | null;
   parish?: string | null;
   preferred_contact_method?: string | null;
-  registration_details: Record<string, unknown> | null;
+  registration_details?: Record<string, unknown> | null;
   created_at: string;
 };
 
@@ -108,7 +108,7 @@ async function loadTanks(admin: NonNullable<Awaited<ReturnType<typeof requireAdm
 async function loadUsersWithFallback(admin: NonNullable<Awaited<ReturnType<typeof requireAdminApi>>["admin"]>) {
   const fullSelect =
     "id, full_name, email, phone, address, parish, preferred_contact_method, registration_details, role, created_at";
-  const baseSelect = "id, full_name, email, phone, registration_details, role, created_at";
+  const baseSelect = "id, full_name, email, phone, role, created_at";
 
   const fullResult = await admin.from("profiles").select(fullSelect).in("role", ["customer", "property_manager", "staff"]).limit(500);
 

@@ -7,7 +7,7 @@ type Params = { id: string };
 async function loadUser(admin: NonNullable<Awaited<ReturnType<typeof requireAdminApi>>["admin"]>, id: string) {
   const fullSelect =
     "id, full_name, email, phone, address, parish, preferred_contact_method, registration_details, role, created_at";
-  const baseSelect = "id, full_name, email, phone, registration_details, role, created_at";
+  const baseSelect = "id, full_name, email, phone, role, created_at";
 
   const fullResult = await admin
     .from("profiles")
@@ -118,7 +118,13 @@ export async function GET(_request: Request, { params }: { params: Promise<Param
   const { data: cleaningHistory } = await loadCleaningHistory(auth.admin, tankIds);
 
   return NextResponse.json({
-    user: userResult.user,
+    user: {
+      ...userResult.user,
+      address: (userResult.user as { address?: string | null }).address ?? null,
+      parish: (userResult.user as { parish?: string | null }).parish ?? null,
+      preferred_contact_method: (userResult.user as { preferred_contact_method?: string | null }).preferred_contact_method ?? null,
+      registration_details: (userResult.user as { registration_details?: Record<string, unknown> | null }).registration_details ?? {},
+    },
     properties: properties ?? [],
     tanks: tanks ?? [],
     cleaningHistory: cleaningHistory ?? [],
