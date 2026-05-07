@@ -8,7 +8,7 @@ export default async function AdminBookingsPage() {
   const [{ data: bookings }, { data: technicians }, { data: customers }, { data: properties }, { data: tanks }] = await Promise.all([
     supabase
     .from("bookings")
-    .select("id, status, technician_id, requested_window_start, requested_window_end, properties(address)")
+    .select("id, status, technician_id, requested_window_start, requested_window_end, scheduled_start, scheduled_end, properties(address)")
     .order("requested_window_start", { ascending: false })
     .limit(100),
     supabase
@@ -43,6 +43,10 @@ export default async function AdminBookingsPage() {
       requestedWindow: `${new Date(booking.requested_window_start).toLocaleDateString()} - ${new Date(
         booking.requested_window_end,
       ).toLocaleDateString()}`,
+      requestedStart: booking.requested_window_start,
+      requestedEnd: booking.requested_window_end,
+      scheduledStart: booking.scheduled_start,
+      scheduledEnd: booking.scheduled_end,
       status: booking.status,
       technicianId: booking.technician_id,
     };
