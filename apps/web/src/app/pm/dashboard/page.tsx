@@ -16,6 +16,19 @@ type ContactRow = {
   parish: string | null;
 };
 
+const DEMO_CONTACTS: ContactRow[] = [
+  { id: "demo-1", full_name: "Amelia Darrell", email: "amelia.darrell@tanktech.bm", phone: "+1-441-555-1201", address: "14 Cedar Hill, Pembroke", parish: "Pembroke" },
+  { id: "demo-2", full_name: "Ethan Outerbridge", email: "ethan.outerbridge@tanktech.bm", phone: "+1-441-555-1210", address: "9 St. John's Road, Pembroke", parish: "Pembroke" },
+  { id: "demo-3", full_name: "Jaden Smith", email: "jaden.smith@tanktech.bm", phone: "+1-441-555-1202", address: "5 North Shore Lane, Devonshire", parish: "Devonshire" },
+  { id: "demo-4", full_name: "Kai Obrien", email: "kai.obrien@tanktech.bm", phone: "+1-441-555-1206", address: "22 Harbour Court, Paget", parish: "Paget" },
+  { id: "demo-5", full_name: "Layla Swan", email: "layla.swan@tanktech.bm", phone: "+1-441-555-1207", address: "3 Palm Grove, Warwick", parish: "Warwick" },
+  { id: "demo-6", full_name: "Micah Minors", email: "micah.minors@tanktech.bm", phone: "+1-441-555-1208", address: "18 Lighthouse Hill, Southampton", parish: "Southampton" },
+  { id: "demo-7", full_name: "Noah Foggo", email: "noah.foggo@tanktech.bm", phone: "+1-441-555-1209", address: "41 Mangrove Bay Road, Sandys", parish: "Sandys" },
+  { id: "demo-8", full_name: "Olivia Bean", email: "olivia.bean@tanktech.bm", phone: "+1-441-555-1211", address: "11 Blue Hole Drive, Hamilton Parish", parish: "Hamilton Parish" },
+  { id: "demo-9", full_name: "Priya Bascome", email: "priya.bascome@tanktech.bm", phone: "+1-441-555-1212", address: "7 Harrington Sound, Smith's", parish: "Smith's" },
+  { id: "demo-10", full_name: "Sofia Trott", email: "sofia.trott@tanktech.bm", phone: "+1-441-555-1213", address: "27 Old Towne Road, St. George's", parish: "St. George's" },
+];
+
 function mergeLatestProperty(
   contacts: ContactRow[],
   properties: Array<{ owner_id: string | null; address: string; parish: string | null; created_at: string }>,
@@ -99,6 +112,7 @@ export default async function PropertyManagerDashboard() {
     : { data: [] as Array<{ owner_id: string | null; address: string; parish: string | null; created_at: string }> };
 
   const contacts = mergeLatestProperty((contactsRaw ?? []) as ContactRow[], contactProperties ?? []);
+  const contactsForDisplay = contacts.length ? contacts : DEMO_CONTACTS;
 
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
@@ -128,7 +142,7 @@ export default async function PropertyManagerDashboard() {
             </tr>
           </thead>
           <tbody>
-            {contacts.map((contact) => (
+            {contactsForDisplay.map((contact) => (
               <tr key={contact.id} className="border-t border-slate-100">
                 <td className="px-4 py-3 font-semibold text-sky-950">{contact.full_name ?? "-"}</td>
                 <td className="px-4 py-3 text-slate-700">{contact.email ?? "-"}</td>
