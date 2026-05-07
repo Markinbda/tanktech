@@ -6,8 +6,20 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/browser";
 
-const appLinks = [
-  { href: "/dashboard", label: "Customer" },
+const customerLinks = [
+  { href: "/register", label: "Profile" },
+  { href: "/bookings", label: "My Cleaning" },
+  { href: "/bookings/new", label: "Request Cleaning" },
+];
+
+const propertyManagerLinks = [
+  { href: "/pm/dashboard", label: "Property Manager" },
+  { href: "/pm/properties", label: "Properties" },
+  { href: "/pm/bookings", label: "Bookings" },
+];
+
+const adminLinks = [
+  { href: "/admin/customers", label: "Customer" },
   { href: "/pm/dashboard", label: "Property Manager" },
   { href: "/admin/dashboard", label: "Dashboard" },
   { href: "/bookings/new", label: "Book Cleaning" },
@@ -82,12 +94,22 @@ export function AppNav() {
   }
 
   const navLinks = useMemo(() => {
-    if (role !== "admin") {
-      return appLinks;
+    if (role === "admin" || role === "staff") {
+      return adminLinks;
     }
 
-    return appLinks.map((link) => (link.label === "Customer" ? { ...link, href: "/admin/customers" } : link));
+    if (role === "property_manager") {
+      return propertyManagerLinks;
+    }
+
+    if (role === "customer") {
+      return customerLinks;
+    }
+
+    return customerLinks;
   }, [role]);
+
+  const visibleLinks = isHome && !isAuthenticated ? marketingLinks : navLinks;
 
   return (
     <header className="sticky top-0 z-20 border-b border-white/10 bg-[#0a1a3a]/90 backdrop-blur-xl">
@@ -96,7 +118,7 @@ export function AppNav() {
           Tank Tech
         </Link>
         <nav className="flex flex-wrap items-center gap-3 text-sm font-semibold text-white/88">
-          {(isHome ? marketingLinks : navLinks).map((link) => (
+          {visibleLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
