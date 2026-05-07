@@ -1,8 +1,20 @@
+import { redirect } from "next/navigation";
+
 import { DashboardCard } from "@/components/dashboard-card";
 import { requireUser } from "@/lib/auth";
 
 export default async function DashboardPage() {
   const { supabase, user } = await requireUser();
+
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+
+  if (profile?.role === "admin" || profile?.role === "staff") {
+    redirect("/admin/dashboard");
+  }
+
+  if (profile?.role === "property_manager") {
+    redirect("/pm/dashboard");
+  }
 
   const [{ count: propertyCount }, { count: tankCount }, { count: bookingCount }] =
     await Promise.all([
