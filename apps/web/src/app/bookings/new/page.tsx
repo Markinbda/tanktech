@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { createClient } from "@/lib/supabase/browser";
@@ -230,6 +231,7 @@ function yesNoButtons(
 
 export default function NewBookingPage() {
   const supabase = useMemo(() => createClient(), []);
+  const router = useRouter();
   const [form, setForm] = useState<FormState>(initialFormState);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<string | null>(null);
@@ -272,7 +274,7 @@ export default function NewBookingPage() {
       setIsSignedIn(true);
 
       const [{ data: profile }, { data: userProperties }, { data: userTanks }] = await Promise.all([
-        supabase.from("profiles").select("full_name, email, phone").eq("id", user.id).maybeSingle(),
+        supabase.from("profiles").select("full_name, email, phone, role").eq("id", user.id).maybeSingle(),
         supabase.from("properties").select("id, address, parish, notes").order("created_at", { ascending: false }),
         supabase
           .from("tanks")
@@ -281,6 +283,11 @@ export default function NewBookingPage() {
       ]);
 
       if (!mounted) {
+        return;
+      }
+
+      if (profile?.role === "admin" || profile?.role === "staff") {
+        router.replace("/admin/bookings");
         return;
       }
 
@@ -317,7 +324,7 @@ export default function NewBookingPage() {
     return () => {
       mounted = false;
     };
-  }, [supabase]);
+  }, [router, supabase]);
 
   useEffect(() => {
     if (!selectedPropertyId || propertyMode !== "existing") {
@@ -589,13 +596,13 @@ export default function NewBookingPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
-      <header className="rounded-3xl border border-sky-200 bg-white p-6 shadow-sm">
-        <h1 className="text-3xl font-bold text-sky-950 sm:text-4xl">Book a Tank Cleaning</h1>
+    <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <header className="rounded-2xl border border-sky-200 bg-white p-5 shadow-sm">
+        <h1 className="text-2xl font-bold text-sky-950 sm:text-3xl">Book a Tank Cleaning</h1>
         <p className="mt-2 max-w-3xl text-sm text-slate-600 sm:text-base">
           Tell us what we need to know so our team can arrive prepared and complete your service in one visit.
         </p>
-        <div className="mt-5 flex flex-wrap items-center gap-3 rounded-2xl border border-sky-100 bg-sky-50 p-4">
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-sky-100 bg-sky-50 p-3">
           <p className="text-sm font-semibold text-sky-900">Already a Tank Tech customer?</p>
           <Link
             href="/login?returnTo=/bookings/new"
@@ -614,8 +621,8 @@ export default function NewBookingPage() {
       </header>
 
       {!reviewMode ? (
-        <form className="mt-6 space-y-6">
-          <section className="rounded-3xl border border-sky-100 bg-white p-6">
+        <form className="mt-4 space-y-4">
+          <section className="rounded-2xl border border-sky-100 bg-white p-4">
             <h2 className="text-xl font-bold text-sky-950">A) Customer & Contact Details</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <label className="text-sm font-semibold text-slate-700">
@@ -671,7 +678,7 @@ export default function NewBookingPage() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-sky-100 bg-white p-6">
+          <section className="rounded-2xl border border-sky-100 bg-white p-4">
             <h2 className="text-xl font-bold text-sky-950">B) Property Details</h2>
             {isSignedIn && properties.length > 0 ? (
               <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50 p-4">
@@ -791,7 +798,7 @@ export default function NewBookingPage() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-sky-100 bg-white p-6">
+          <section className="rounded-2xl border border-sky-100 bg-white p-4">
             <h2 className="text-xl font-bold text-sky-950">C) Water Tank Details</h2>
 
             {isSignedIn && propertyMode === "existing" && filteredTanks.length > 0 ? (
@@ -922,7 +929,7 @@ export default function NewBookingPage() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-sky-100 bg-white p-6">
+          <section className="rounded-2xl border border-sky-100 bg-white p-4">
             <h2 className="text-xl font-bold text-sky-950">D) Access & Safety Information</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <label className="text-sm font-semibold text-slate-700">
@@ -1054,7 +1061,7 @@ export default function NewBookingPage() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-sky-100 bg-white p-6">
+          <section className="rounded-2xl border border-sky-100 bg-white p-4">
             <h2 className="text-xl font-bold text-sky-950">E) Service Type Selection</h2>
             <div className="mt-4 grid gap-2">
               {SERVICE_TYPES.map((service) => (
@@ -1106,7 +1113,7 @@ export default function NewBookingPage() {
             ) : null}
           </section>
 
-          <section className="rounded-3xl border border-sky-100 bg-white p-6">
+          <section className="rounded-2xl border border-sky-100 bg-white p-4">
             <h2 className="text-xl font-bold text-sky-950">F) Scheduling Preferences</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <label className="text-sm font-semibold text-slate-700">
@@ -1154,7 +1161,7 @@ export default function NewBookingPage() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-sky-100 bg-white p-6">
+          <section className="rounded-2xl border border-sky-100 bg-white p-4">
             <h2 className="text-xl font-bold text-sky-950">G) Compliance & Report Needs</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <div className="text-sm font-semibold text-slate-700">
@@ -1207,7 +1214,7 @@ export default function NewBookingPage() {
             ) : null}
           </section>
 
-          <section className="rounded-3xl border border-sky-100 bg-white p-6">
+          <section className="rounded-2xl border border-sky-100 bg-white p-4">
             <h2 className="text-xl font-bold text-sky-950">H) Consent & Acknowledgements</h2>
             <label className="mt-4 flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-700">
               <input
@@ -1240,7 +1247,7 @@ export default function NewBookingPage() {
           </div>
         </form>
       ) : (
-        <section className="mt-6 rounded-3xl border border-sky-100 bg-white p-6">
+        <section className="mt-4 rounded-2xl border border-sky-100 bg-white p-4">
           <h2 className="text-2xl font-bold text-sky-950">Review your booking details</h2>
           <p className="mt-2 text-sm text-slate-600">
             Please confirm everything below before submitting.
