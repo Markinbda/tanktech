@@ -101,6 +101,10 @@ export function BookingScheduler({ bookings, technicians }: Props) {
       return aTime - bTime;
     });
 
+  const techniciansById = new Map(
+    technicians.map((technician) => [technician.id, technician.full_name ?? technician.email ?? technician.id]),
+  );
+
   async function updateBooking(formData: FormData) {
     const bookingId = String(formData.get("bookingId"));
     setPendingId(bookingId);
@@ -215,74 +219,80 @@ export function BookingScheduler({ bookings, technicians }: Props) {
       ) : null}
 
       {selectedDayBookings.map((booking) => (
-        <form
-          key={booking.id}
-          action={updateBooking}
-          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-        >
-          <input type="hidden" name="bookingId" value={booking.id} />
-          <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr_1fr_1fr_auto] lg:items-end">
-            <div>
+        <details key={booking.id} className="group rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <summary className="cursor-pointer list-none px-4 py-3">
+            <div className="grid gap-1 sm:grid-cols-[2fr_1fr_1fr_1fr] sm:items-center sm:gap-3">
               <p className="text-sm font-semibold text-sky-900">{booking.property}</p>
-              <p className="text-xs text-slate-500">Slot: {formatTimeSlot(booking)}</p>
-              <p className="text-xs text-slate-500">Requested: {booking.requestedWindow}</p>
+              <p className="text-xs text-slate-600">{formatTimeSlot(booking)}</p>
+              <p className="text-xs text-slate-600 capitalize">{booking.status.replace("_", " ")}</p>
+              <p className="text-xs text-slate-500">
+                {booking.technicianId ? techniciansById.get(booking.technicianId) : "Unassigned"}
+              </p>
             </div>
-            <label className="text-sm text-slate-600">
-              Scheduled start
-              <input
-                name="scheduledStart"
-                type="datetime-local"
-                defaultValue={toInputDateTimeValue(booking.scheduledStart)}
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
-              />
-            </label>
-            <label className="text-sm text-slate-600">
-              Scheduled end
-              <input
-                name="scheduledEnd"
-                type="datetime-local"
-                defaultValue={toInputDateTimeValue(booking.scheduledEnd)}
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
-              />
-            </label>
-            <label className="text-sm text-slate-600">
-              Technician
-              <select
-                name="technicianId"
-                defaultValue={booking.technicianId ?? ""}
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
-              >
-                <option value="">Unassigned</option>
-                {technicians.map((technician) => (
-                  <option key={technician.id} value={technician.id}>
-                    {technician.full_name ?? technician.email ?? technician.id}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="text-sm text-slate-600">
-              Status
-              <select
-                name="status"
-                defaultValue={booking.status}
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
-              >
-                <option value="requested">Requested</option>
-                <option value="scheduled">Scheduled</option>
-                <option value="in_progress">In Progress</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </label>
-          </div>
-          <button
-            type="submit"
-            disabled={pendingId === booking.id}
-            className="mt-4 rounded-xl bg-sky-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          >
-            {pendingId === booking.id ? "Saving..." : "Save schedule"}
-          </button>
-        </form>
+            <p className="mt-1 text-xs text-slate-500">Requested: {booking.requestedWindow}</p>
+            <p className="mt-1 text-xs font-medium text-sky-700 group-open:hidden">Click to expand</p>
+          </summary>
+
+          <form action={updateBooking} className="border-t border-slate-200 px-4 py-4">
+            <input type="hidden" name="bookingId" value={booking.id} />
+            <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr_1fr] lg:items-end">
+              <label className="text-sm text-slate-600">
+                Scheduled start
+                <input
+                  name="scheduledStart"
+                  type="datetime-local"
+                  defaultValue={toInputDateTimeValue(booking.scheduledStart)}
+                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
+                />
+              </label>
+              <label className="text-sm text-slate-600">
+                Scheduled end
+                <input
+                  name="scheduledEnd"
+                  type="datetime-local"
+                  defaultValue={toInputDateTimeValue(booking.scheduledEnd)}
+                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
+                />
+              </label>
+              <label className="text-sm text-slate-600">
+                Technician
+                <select
+                  name="technicianId"
+                  defaultValue={booking.technicianId ?? ""}
+                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
+                >
+                  <option value="">Unassigned</option>
+                  {technicians.map((technician) => (
+                    <option key={technician.id} value={technician.id}>
+                      {technician.full_name ?? technician.email ?? technician.id}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm text-slate-600">
+                Status
+                <select
+                  name="status"
+                  defaultValue={booking.status}
+                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
+                >
+                  <option value="requested">Requested</option>
+                  <option value="scheduled">Scheduled</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </label>
+            </div>
+            <button
+              type="submit"
+              disabled={pendingId === booking.id}
+              className="mt-4 rounded-xl bg-sky-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {pendingId === booking.id ? "Saving..." : "Save schedule"}
+            </button>
+          </form>
+        </details>
       ))}
       {message ? <p className="text-sm text-slate-700">{message}</p> : null}
     </div>
