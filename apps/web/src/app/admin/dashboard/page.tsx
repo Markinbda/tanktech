@@ -173,15 +173,23 @@ export default async function AdminDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {customerSummary.map((row) => (
-                  <tr key={row.id} className="border-t border-slate-100">
+                {customerSummary.map((row) => {
+                  const isOverdue =
+                    Boolean(row.nextDue) &&
+                    new Date(row.nextDue!).setHours(0, 0, 0, 0) < Date.now();
+
+                  return (
+                  <tr key={row.id} className={["border-t border-slate-100", isOverdue ? "bg-rose-50" : ""].join(" ")}>
                     <td className="px-3 py-2">
-                      <p className="font-semibold text-sky-950">{row.name}</p>
+                      <p className={["font-semibold", isOverdue ? "text-rose-700" : "text-sky-950"].join(" ")}>{row.name}</p>
                       <p className="text-xs text-slate-600">{row.email}</p>
                     </td>
                     <td className="px-3 py-2">{row.tankCount}</td>
                     <td className="px-3 py-2">{row.lastServiced ?? "-"}</td>
-                    <td className="px-3 py-2">{row.nextDue ?? "-"}</td>
+                    <td className={["px-3 py-2 font-semibold", isOverdue ? "text-rose-700" : ""].join(" ")}>
+                      {row.nextDue ?? "-"}
+                      {isOverdue ? <span className="ml-1 text-xs font-normal">(overdue)</span> : null}
+                    </td>
                     <td className="px-3 py-2">
                       <Link
                         href={`/admin/users/${row.id}`}
@@ -191,7 +199,8 @@ export default async function AdminDashboardPage() {
                       </Link>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
